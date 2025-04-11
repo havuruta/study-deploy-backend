@@ -44,58 +44,78 @@ public class TokenProvider {
     }
 
     public TokenDto.Response generateToken(Authentication authentication) {
+        log.debug("토큰 생성 시작 - Authentication: {}", authentication);
+        log.debug("Principal: {}", authentication.getPrincipal());
+        log.debug("Authorities: {}", authentication.getAuthorities());
 
         // 권한들 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
+        log.debug("권한 문자열: {}", authorities);
 
         long now = (new Date()).getTime();
+        log.debug("현재 시간: {}", now);
 
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+        log.debug("Access Token 만료 시간: {}", accessTokenExpiresIn);
 
         UserPrincipal userPrincipal = (UserPrincipal)authentication.getPrincipal();
+        log.debug("UserPrincipal 정보 - ID: {}, Email: {}", userPrincipal.getId(), userPrincipal.getEmail());
 
         Claims claims = Jwts.claims();
+        log.debug("새로운 Claims 객체 생성");
 
         claims.put(AUTHORITIES_KEY, authorities);
         claims.put(USER_ID, userPrincipal.getId());
         claims.put(USER_EMAIL, userPrincipal.getEmail());
+        claims.setSubject(userPrincipal.getEmail());
+        log.debug("Claims 설정 완료: {}", claims);
 
         String accessToken = Jwts.builder()
-            //jwt 내에 들어가는 정보를 커스텀 가능합니다.
-            .setSubject(userPrincipal.getEmail())       // payload "sub": "name"
-            .setClaims(claims)                          // payload "auth": "ROLE_USER"
-            .setExpiration(accessTokenExpiresIn)        // payload "exp": 1516239022 (예시)
-            .signWith(key, SignatureAlgorithm.HS512)    // header "alg": "HS512"
+            .setClaims(claims)
+            .setExpiration(accessTokenExpiresIn)
+            .signWith(key, SignatureAlgorithm.HS512)
             .compact();
+
+        log.debug("생성된 Access Token: {}", accessToken);
+        log.debug("Access Token 길이: {}", accessToken.length());
+        log.debug("Access Token 만료 시간: {}", accessTokenExpiresIn);
 
         // Refresh Token 생성
         Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
+        log.debug("Refresh Token 만료 시간: {}", refreshTokenExpiresIn);
 
         String refreshToken = Jwts.builder()
             .setExpiration(refreshTokenExpiresIn)
             .signWith(key, SignatureAlgorithm.HS512)
             .compact();
 
-        log.debug("생성된 토큰: {}", accessToken);
-        log.debug("만료 시간: {}", accessTokenExpiresIn);
+        log.debug("생성된 Refresh Token: {}", refreshToken);
+        log.debug("Refresh Token 길이: {}", refreshToken.length());
+        log.debug("Refresh Token 만료 시간: {}", refreshTokenExpiresIn);
 
-
-        return TokenDto.Response.builder()
+        TokenDto.Response response = TokenDto.Response.builder()
             .grantType(BEARER_TYPE)
             .accessToken(accessToken)
             .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
             .refreshToken(refreshToken)
             .build();
+
+        log.debug("생성된 TokenDto.Response: {}", response);
+        return response;
     }
 
     public Authentication getAuthentication(String accessToken, HttpServletRequest request) {
+        log.debug("토큰 인증 시작 - Access Token: {}", accessToken);
+        
         // 토큰 복호화
         Claims claims = parseClaims(accessToken);
+        log.debug("복호화된 Claims: {}", claims);
 
         if (claims.get(AUTHORITIES_KEY) == null) {
+            log.error("권한 정보가 없는 토큰입니다.");
             throw new InvalidTokenException();
         }
 
@@ -104,6 +124,7 @@ public class TokenProvider {
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .toList();
+        log.debug("추출된 권한: {}", authorities);
 
         // UserPrincipal 객체를 만들어서 Authentication 리턴
         UserPrincipal principal = new UserPrincipal(
@@ -112,33 +133,39 @@ public class TokenProvider {
                 "",
                 authorities
         );
+        log.debug("생성된 UserPrincipal: {}", principal);
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return authentication;
     }
 
-
     public boolean validateToken(String token) {
+        log.debug("토큰 검증 시작 - Token: {}", token);
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            log.debug("토큰 검증 성공");
             return true;
         } catch (SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
+            log.error("잘못된 JWT 서명입니다. 에러: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
+            log.error("만료된 JWT 토큰입니다. 에러: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
+            log.error("지원되지 않는 JWT 토큰입니다. 에러: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
+            log.error("JWT 토큰이 잘못되었습니다. 에러: {}", e.getMessage());
         }
         return false;
     }
 
     private Claims parseClaims(String accessToken) {
+        log.debug("토큰 파싱 시작 - Access Token: {}", accessToken);
         try {
-            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+            log.debug("파싱된 Claims: {}", claims);
+            return claims;
         } catch (ExpiredJwtException e) {
+            log.error("만료된 토큰 파싱 - Claims: {}", e.getClaims());
             return e.getClaims();
         }
     }
