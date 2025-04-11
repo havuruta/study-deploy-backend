@@ -58,10 +58,16 @@ public class AuthService {
         //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
-        // 3. 인증 정보를 기반으로 JWT 토큰 생성
+        // 3. UserPrincipal 생성 및 Authentication에 설정
+        User user = userRepository.findByEmail(defaultRequest.getEmail())
+                .orElseThrow(() -> new NoSuchElementException(ErrorMessage.USER_NOT_FOUND));
+        UserPrincipal userPrincipal = UserPrincipal.create(user);
+        authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
+
+        // 4. 인증 정보를 기반으로 JWT 토큰 생성
         TokenDto.Response tokenResDto = tokenProvider.generateToken(authentication);
 
-        // 4. RefreshToken 저장
+        // 5. RefreshToken 저장
         RefreshToken refreshToken = RefreshToken.builder()
                 .key(authentication.getName())
                 .value(tokenResDto.getRefreshToken())
@@ -69,7 +75,7 @@ public class AuthService {
 
         refreshTokenRepository.save(refreshToken);
 
-        // 5. 토큰 발급
+        // 6. 토큰 발급
         return tokenResDto;
     }
 
