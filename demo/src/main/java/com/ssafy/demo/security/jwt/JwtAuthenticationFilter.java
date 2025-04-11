@@ -29,17 +29,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // JWT 토큰의 인증 정보를 현재 쓰레드의 SecurityContext 에 저장하는 역할 수행
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        log.debug("JwtAuthenticationFilter 시작 - 요청 URI: {}", request.getRequestURI());
 
         try {
             // 1. Request Header 에서 토큰을 꺼냄
             String jwt = getJwtFromRequest(request);
+            log.debug("추출된 JWT 토큰: {}", jwt);
 
             // 2. validateToken 으로 토큰 유효성 검사
             // 정상 토큰이면 해당 토큰으로 Authentication 을 가져와서 SecurityContext 에 저장
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                Authentication authentication = tokenProvider.getAuthentication(jwt, request);
-                log.debug("Authentication 정보: {}", authentication);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (StringUtils.hasText(jwt)) {
+                log.debug("토큰 검증 시작");
+                if (tokenProvider.validateToken(jwt)) {
+                    log.debug("토큰 검증 성공");
+                    Authentication authentication = tokenProvider.getAuthentication(jwt, request);
+                    log.debug("생성된 Authentication: {}", authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    log.debug("토큰 검증 실패");
+                }
+            } else {
+                log.debug("요청에 토큰이 없습니다");
             }
         } catch (Exception e){
             log.error("Could not set user authentication in security context", e);
@@ -50,8 +60,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER_NAME);
+        log.debug("Authorization 헤더: {}", bearerToken);
+        
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TOKEN_PREFIX)) {
-            return bearerToken.substring(7, bearerToken.length());
+            String token = bearerToken.substring(7, bearerToken.length());
+            log.debug("추출된 토큰: {}", token);
+            return token;
         }
         return null;
     }
