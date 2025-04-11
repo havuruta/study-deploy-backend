@@ -26,7 +26,7 @@ public class UserPrincipal implements UserDetails {
     @Builder
     public static UserPrincipal create(User user) {
         List<GrantedAuthority> authorities = Collections.
-                singletonList(new SimpleGrantedAuthority("ROLE_GUEST"));
+                singletonList(new SimpleGrantedAuthority("ROLE_USER"));
 
         return new UserPrincipal(
                 user.getId(),

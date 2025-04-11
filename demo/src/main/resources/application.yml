@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/demo_db?characterEncoding=utf8&serverTimezone=UTC
-    username: admin
-    password: 1234
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/demo_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -11,10 +11,16 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.ssafy.demo: DEBUG
+
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 springdoc:
   api-docs:
@@ -22,9 +28,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-
 jwt:
-    secret: 8d64ddc4c0baef3697aaeb709ffab5ccf18a89fd7a1510eadb1987337658d22688b67d32955573bab5e594c86a6e23b914ea59744025573ff5d4eb55fc2fb223f145b74b3e19b2228ca7088cd9a7d4162380b80115cd65911251fe59cdf6d927cb1afdc2d64f169e684b069db4a5461fe2c19913709492b01c448cbcf74492ac
-    expiration: 86400 # 1 day in seconds
-    issuer: myapp
-    audience: myapp-users
+  secret: ${JWT_SECRET:6781ee3f7bbb335f7285c646bee0032478280335400ce6ac70f76f2ded5a319a6168fb8f56d3e26659a8d95d6ad1f568eaab227a4346360e5a837ffdd184c89cc7a504eeadab54d35720b52ed4048056ee3b38c5e40e813e810c619dd47290b655d639674dae4a503008a246b15d62d596e052375ebd4d471feb367c1484f4b5}
+  token-validity-in-seconds: ${JWT_TOKEN_VALIDITY:86400}

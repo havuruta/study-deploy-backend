@@ -10,6 +10,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ssafy.demo.user.entity.User;
+import com.ssafy.demo.user.entity.Gender;
+import java.util.Optional;
 
 public class AuthDto {
 
@@ -27,23 +29,29 @@ public class AuthDto {
         @Size(min = 8,max = 20)
         private String password;
 
+        private String nickname;
+        private String gender;
+
         public User toEntity(PasswordEncoder passwordEncoder) {
             return User.builder()
                     .email(email)
                     .password(passwordEncoder.encode(password))
+                    .name(nickname)
+                    .gender(Gender.fromString(gender))
                     .build();
         }
 
         public static DefaultRequest toDto(User user){
             return new DefaultRequest(
                     user.getEmail(),
-                    user.getPassword()
+                    user.getPassword(),
+                    user.getName(),
+                    Optional.ofNullable(user.getGender()).map(Enum::toString).orElse(null)
             );
         }
 
         public UsernamePasswordAuthenticationToken toAuthentication() {
             return new UsernamePasswordAuthenticationToken(email, password);
-
         }
     }
 
