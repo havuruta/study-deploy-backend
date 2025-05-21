@@ -27,12 +27,12 @@ public class RefreshToken {
     }
 
     @Builder
-    public static RefreshToken create(String key, String value){
-        return new RefreshToken(key,value);
+    public static RefreshToken create(String key, String value) {
+        return new RefreshToken(key, value);
     }
 
     public RefreshToken updateValue(String token) {
         this.value = token;
         return this;
     }
-}
+} 
