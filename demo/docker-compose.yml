@@ -21,5 +21,22 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: demo-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - demo-network
+
 volumes:
   mysql_data:
+  redis-data:
+    name: demo-redis-data
+
+networks:
+  demo-network:
+    name: demo-network

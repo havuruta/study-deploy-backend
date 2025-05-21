@@ -49,6 +49,12 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // bucket4j
+    implementation 'com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0'
 }
 
 tasks.named('test') {
