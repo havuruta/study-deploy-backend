@@ -20,30 +20,31 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    public static final String AUTHORIZATION_HEADER_NAME = "Authorization";
-    public static final String BEARER_TOKEN_PREFIX = "Bearer ";
+    // 1. 쿠키 이름 상수 정의
+    public static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
+    public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
 
     private final TokenProvider tokenProvider;
 
-    // 실제 필터링 로직은 doFilterInternal 에 들어감
-    // JWT 토큰의 인증 정보를 현재 쓰레드의 SecurityContext 에 저장하는 역할 수행
+    // 2. 모든 요청에 대해 실행되는 필터 메서드
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         log.debug("JwtAuthenticationFilter 시작 - 요청 URI: {}", request.getRequestURI());
 
         try {
-            // 1. Request Header 에서 토큰을 꺼냄
+            // 3. 쿠키에서 JWT 토큰 추출
             String jwt = getJwtFromRequest(request);
             log.debug("추출된 JWT 토큰: {}", jwt);
 
-            // 2. validateToken 으로 토큰 유효성 검사
-            // 정상 토큰이면 해당 토큰으로 Authentication 을 가져와서 SecurityContext 에 저장
+            // 4. 토큰이 존재하고 유효한 경우 인증 처리
             if (StringUtils.hasText(jwt)) {
                 log.debug("토큰 검증 시작");
                 if (tokenProvider.validateToken(jwt)) {
                     log.debug("토큰 검증 성공");
+                    // 5. 토큰으로부터 인증 정보 생성
                     Authentication authentication = tokenProvider.getAuthentication(jwt, request);
                     log.debug("생성된 Authentication: {}", authentication);
+                    // 6. SecurityContext에 인증 정보 저장
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
                     log.debug("토큰 검증 실패");
@@ -58,14 +59,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    // 7. 쿠키에서 JWT 토큰을 추출하는 메서드
     private String getJwtFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER_NAME);
-        log.debug("Authorization 헤더: {}", bearerToken);
-        
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TOKEN_PREFIX)) {
-            String token = bearerToken.substring(7, bearerToken.length());
-            log.debug("추출된 토큰: {}", token);
-            return token;
+        jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (jakarta.servlet.http.Cookie cookie : cookies) {
+                if (ACCESS_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }
