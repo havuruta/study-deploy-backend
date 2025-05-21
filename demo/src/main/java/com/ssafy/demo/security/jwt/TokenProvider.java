@@ -28,27 +28,40 @@ import com.ssafy.demo.security.dto.TokenDto;
 public class TokenProvider {
     private static final Logger log = LoggerFactory.getLogger(TokenProvider.class);
 
-    private static final String AUTHORITIES_KEY = "auth";
-    private static final String USER_ID = "id";
-    private static final String USER_EMAIL = "email";
-    private static final String BEARER_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;            // 30분
-    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
+    // 1. JWT 관련 상수 정의
+    public static final String AUTHORITIES_KEY = "auth";
+    public static final String USER_ID = "id";
+    public static final String USER_EMAIL = "email";
+    public static final String BEARER_TYPE = "Bearer";
+    public static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
+    public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+    public static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;            // 30분
+    public static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
 
     private final Key key;
+    private final TokenBlacklist tokenBlacklist;
+    private final long accessTokenValidityInMilliseconds;
+    private final long refreshTokenValidityInMilliseconds;
 
-    // yml 에서 jwt.secret 에 저장된 난수를 불러와서 decode 상수로 사용합니다.
-    public TokenProvider(@Value("${jwt.secret}") String secretKey) {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+    // 2. JWT 서명 키 초기화
+    public TokenProvider(
+            @Value("${jwt.secret}") String secretKey,
+            @Value("${jwt.access-token-validity-in-seconds}") long accessTokenValidityInMilliseconds,
+            @Value("${jwt.refresh-token-validity-in-seconds}") long refreshTokenValidityInMilliseconds,
+            TokenBlacklist tokenBlacklist) {
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.accessTokenValidityInMilliseconds = accessTokenValidityInMilliseconds;
+        this.refreshTokenValidityInMilliseconds = refreshTokenValidityInMilliseconds;
+        this.tokenBlacklist = tokenBlacklist;
     }
 
+    // 3. 토큰 생성 메서드
     public TokenDto.Response generateToken(Authentication authentication) {
         log.debug("토큰 생성 시작 - Authentication: {}", authentication);
         log.debug("Principal: {}", authentication.getPrincipal());
         log.debug("Authorities: {}", authentication.getAuthorities());
 
-        // 권한들 가져오기
+        // 3-1. 권한 정보 추출
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -57,13 +70,14 @@ public class TokenProvider {
         long now = (new Date()).getTime();
         log.debug("현재 시간: {}", now);
 
-        // Access Token 생성
+        // 3-2. 액세스 토큰 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         log.debug("Access Token 만료 시간: {}", accessTokenExpiresIn);
 
         UserPrincipal userPrincipal = (UserPrincipal)authentication.getPrincipal();
         log.debug("UserPrincipal 정보 - ID: {}, Email: {}", userPrincipal.getId(), userPrincipal.getEmail());
 
+        // 3-3. JWT 클레임 설정
         Claims claims = Jwts.claims();
         log.debug("새로운 Claims 객체 생성");
 
@@ -73,6 +87,7 @@ public class TokenProvider {
         claims.setSubject(userPrincipal.getEmail());
         log.debug("Claims 설정 완료: {}", claims);
 
+        // 3-4. 액세스 토큰 서명
         String accessToken = Jwts.builder()
             .setClaims(claims)
             .setExpiration(accessTokenExpiresIn)
@@ -83,7 +98,7 @@ public class TokenProvider {
         log.debug("Access Token 길이: {}", accessToken.length());
         log.debug("Access Token 만료 시간: {}", accessTokenExpiresIn);
 
-        // Refresh Token 생성
+        // 3-5. 리프레시 토큰 생성
         Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
         log.debug("Refresh Token 만료 시간: {}", refreshTokenExpiresIn);
 
@@ -96,6 +111,7 @@ public class TokenProvider {
         log.debug("Refresh Token 길이: {}", refreshToken.length());
         log.debug("Refresh Token 만료 시간: {}", refreshTokenExpiresIn);
 
+        // 3-6. 토큰 응답 객체 생성
         TokenDto.Response response = TokenDto.Response.builder()
             .grantType(BEARER_TYPE)
             .accessToken(accessToken)
@@ -107,10 +123,11 @@ public class TokenProvider {
         return response;
     }
 
+    // 4. 토큰으로부터 인증 정보를 추출하는 메서드
     public Authentication getAuthentication(String accessToken, HttpServletRequest request) {
         log.debug("토큰 인증 시작 - Access Token: {}", accessToken);
         
-        // 토큰 복호화
+        // 4-1. 토큰 복호화
         Claims claims = parseClaims(accessToken);
         log.debug("복호화된 Claims: {}", claims);
 
@@ -119,14 +136,14 @@ public class TokenProvider {
             throw new InvalidTokenException();
         }
 
-        // 클레임에서 권한 정보 가져오기
+        // 4-2. 권한 정보 추출
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .toList();
         log.debug("추출된 권한: {}", authorities);
 
-        // UserPrincipal 객체를 만들어서 Authentication 리턴
+        // 4-3. UserPrincipal 객체 생성
         UserPrincipal principal = new UserPrincipal(
                 Long.parseLong(claims.get(USER_ID).toString()),
                 claims.get(USER_EMAIL).toString(),
@@ -135,29 +152,32 @@ public class TokenProvider {
         );
         log.debug("생성된 UserPrincipal: {}", principal);
 
+        // 4-4. Authentication 객체 생성 및 반환
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return authentication;
     }
 
+    // 5. 토큰 유효성 검증 메서드
     public boolean validateToken(String token) {
-        log.debug("토큰 검증 시작 - Token: {}", token);
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            log.debug("토큰 검증 성공");
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+            
+            // 블랙리스트 체크
+            if (tokenBlacklist.isBlacklisted(token)) {
+                return false;
+            }
+            
             return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            log.error("잘못된 JWT 서명입니다. 에러: {}", e.getMessage());
-        } catch (ExpiredJwtException e) {
-            log.error("만료된 JWT 토큰입니다. 에러: {}", e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            log.error("지원되지 않는 JWT 토큰입니다. 에러: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            log.error("JWT 토큰이 잘못되었습니다. 에러: {}", e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
         }
-        return false;
     }
 
+    // 6. 토큰 클레임 파싱 메서드
     private Claims parseClaims(String accessToken) {
         log.debug("토큰 파싱 시작 - Access Token: {}", accessToken);
         try {
@@ -168,5 +188,21 @@ public class TokenProvider {
             log.error("만료된 토큰 파싱 - Claims: {}", e.getClaims());
             return e.getClaims();
         }
+    }
+
+    /**
+     * 액세스 토큰 만료 시간을 초 단위로 반환
+     * @return 액세스 토큰 만료 시간(초)
+     */
+    public long getAccessTokenExpirationTime() {
+        return accessTokenValidityInMilliseconds / 1000;
+    }
+
+    /**
+     * 리프레시 토큰 만료 시간을 초 단위로 반환
+     * @return 리프레시 토큰 만료 시간(초)
+     */
+    public long getRefreshTokenExpirationTime() {
+        return refreshTokenValidityInMilliseconds / 1000;
     }
 }
