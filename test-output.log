@@ -1,0 +1,159 @@
+Initialized native services in: /Users/chos/.gradle/native
+Initialized jansi services in: /Users/chos/.gradle/native
+Received JVM installation metadata from '/opt/homebrew/Cellar/openjdk@17/17.0.14/libexec/openjdk.jdk/Contents/Home': {JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.14/libexec/openjdk.jdk/Contents/Home, JAVA_VERSION=17.0.14, JAVA_VENDOR=Homebrew, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.14+0, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.14+0, VM_VENDOR=Homebrew, OS_ARCH=aarch64}
+The client will now receive all logging from the daemon (pid: 79484). The daemon log file: /Users/chos/.gradle/daemon/8.4/daemon-79484.out.log
+Starting 38th build in daemon [uptime: 3 hrs 1 mins 41.25 secs, performance: 98%, GC rate: 0.00/s, heap usage: 0% of 512 MiB, non-heap usage: 21% of 384 MiB]
+Using 11 worker leases.
+Now considering [/Users/chos/Documents/Github/stdev/study-deploy-backend/demo] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/Users/chos/Documents/Github/stdev/study-deploy-backend/demo/settings.gradle'.
+Projects loaded. Root project using build file '/Users/chos/Documents/Github/stdev/study-deploy-backend/demo/build.gradle'.
+Included projects: [root project 'study-deploy-backend']
+
+> Configure project :
+Evaluating root project 'study-deploy-backend' using build file '/Users/chos/Documents/Github/stdev/study-deploy-backend/demo/build.gradle'.
+Applying dependency management to configuration 'annotationProcessor' in project 'study-deploy-backend'
+Applying dependency management to configuration 'apiElements' in project 'study-deploy-backend'
+Applying dependency management to configuration 'archives' in project 'study-deploy-backend'
+Applying dependency management to configuration 'bootArchives' in project 'study-deploy-backend'
+Applying dependency management to configuration 'compileClasspath' in project 'study-deploy-backend'
+Applying dependency management to configuration 'compileOnly' in project 'study-deploy-backend'
+Applying dependency management to configuration 'default' in project 'study-deploy-backend'
+Applying dependency management to configuration 'developmentOnly' in project 'study-deploy-backend'
+Applying dependency management to configuration 'implementation' in project 'study-deploy-backend'
+Applying dependency management to configuration 'mainSourceElements' in project 'study-deploy-backend'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'study-deploy-backend'
+Applying dependency management to configuration 'runtimeClasspath' in project 'study-deploy-backend'
+Applying dependency management to configuration 'runtimeElements' in project 'study-deploy-backend'
+Applying dependency management to configuration 'runtimeOnly' in project 'study-deploy-backend'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'study-deploy-backend'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'study-deploy-backend'
+Applying dependency management to configuration 'testCompileClasspath' in project 'study-deploy-backend'
+Applying dependency management to configuration 'testCompileOnly' in project 'study-deploy-backend'
+Applying dependency management to configuration 'testImplementation' in project 'study-deploy-backend'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'study-deploy-backend'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'study-deploy-backend'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'study-deploy-backend'
+All projects evaluated.
+Task name matched 'test'
+Selected primary task 'test' from project :
+Starting process 'command '/usr/libexec/java_home''. Working directory: /Users/chos/.gradle/daemon/8.4 Command: /usr/libexec/java_home -V
+Successfully started process 'command '/usr/libexec/java_home''
+Resolving global dependency management for project 'study-deploy-backend'
+Excluding [com.google.protobuf:protobuf-java]
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Tasks to be executed: [task ':compileJava', task ':processResources', task ':classes', task ':compileTestJava', task ':processTestResources', task ':testClasses', task ':test']
+Tasks that were excluded: []
+Resolve mutations for :compileJava (Thread[Execution worker,5,main]) started.
+:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :compileJava UP-TO-DATE
+Caching disabled for task ':compileJava' because:
+  Build cache is disabled
+Skipping task ':compileJava' as it is up-to-date.
+Resolve mutations for :processResources (Thread[Execution worker,5,main]) started.
+:processResources (Thread[Execution worker,5,main]) started.
+
+> Task :processResources UP-TO-DATE
+Caching disabled for task ':processResources' because:
+  Build cache is disabled
+Skipping task ':processResources' as it is up-to-date.
+Resolve mutations for :classes (Thread[Execution worker,5,main]) started.
+:classes (Thread[Execution worker,5,main]) started.
+
+> Task :classes UP-TO-DATE
+Skipping task ':classes' as it has no actions.
+Resolve mutations for :compileTestJava (Thread[Execution worker,5,main]) started.
+:compileTestJava (Thread[Execution worker,5,main]) started.
+
+> Task :compileTestJava UP-TO-DATE
+Excluding []
+Caching disabled for task ':compileTestJava' because:
+  Build cache is disabled
+Skipping task ':compileTestJava' as it is up-to-date.
+Resolve mutations for :processTestResources (Thread[Execution worker,5,main]) started.
+:processTestResources (Thread[Execution worker,5,main]) started.
+
+> Task :processTestResources NO-SOURCE
+Skipping task ':processTestResources' as it has no source files and no previous output files.
+Resolve mutations for :testClasses (Thread[Execution worker,5,main]) started.
+:testClasses (Thread[Execution worker,5,main]) started.
+
+> Task :testClasses UP-TO-DATE
+Skipping task ':testClasses' as it has no actions.
+Resolve mutations for :test (Thread[Execution worker,5,main]) started.
+:test (Thread[Execution worker,5,main]) started.
+Gradle Test Executor 28 started executing tests.
+Gradle Test Executor 28 finished executing tests.
+
+> Task :test FAILED
+Caching disabled for task ':test' because:
+  Build cache is disabled
+Task ':test' is not up-to-date because:
+  Task has failed previously.
+Starting process 'Gradle Test Executor 28'. Working directory: /Users/chos/Documents/Github/stdev/study-deploy-backend/demo Command: /opt/homebrew/Cellar/openjdk@17/17.0.14/libexec/openjdk.jdk/Contents/Home/bin/java -Dorg.gradle.internal.worker.tmpdir=/Users/chos/Documents/Github/stdev/study-deploy-backend/demo/build/tmp/test/work -Dorg.gradle.native=false @/Users/chos/.gradle/.tmp/gradle-worker-classpath11328894741364764863txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=KR -Duser.language=ko -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 28'
+Successfully started process 'Gradle Test Executor 28'
+
+AuthServiceTest > 토큰 재발급 테스트 > 정상적인 토큰 재발급 FAILED
+    java.lang.AssertionError: 
+    Expecting actual not to be null
+        at com.ssafy.demo.security.auth.AuthServiceTest$ReissueTest.reissueSuccess(AuthServiceTest.java:282)
+
+AuthServiceTest > 로그아웃 테스트 > 정상적인 로그아웃 FAILED
+    java.lang.AssertionError: 
+    Expecting actual not to be null
+        at com.ssafy.demo.security.auth.AuthServiceTest$LogoutTest.logoutSuccess(AuthServiceTest.java:242)
+
+AuthServiceTest > 로그인 테스트 > 정상적인 로그인 FAILED
+    java.lang.AssertionError: 
+    Expecting actual not to be null
+        at com.ssafy.demo.security.auth.AuthServiceTest$LoginTest.loginSuccess(AuthServiceTest.java:185)
+
+AuthServiceTest > 회원가입 테스트 > 잘못된 비밀번호 형식으로 회원가입 시도 FAILED
+    org.mockito.exceptions.misusing.MissingMethodInvocationException: 
+    when() requires an argument which has to be 'a method call on a mock'.
+    For example:
+        when(mock.getArticles()).thenReturn(articles);
+
+    Also, this error might show up because:
+    1. you stub either of: final/private/native/equals()/hashCode() methods.
+       Those methods *cannot* be stubbed/verified.
+       Mocking methods declared on non-public parent classes is not supported.
+    2. inside when() you don't call method on mock but on some other object.
+        at app//com.ssafy.demo.security.auth.AuthServiceTest$SignupTest.signupWithInvalidPassword(AuthServiceTest.java:147)
+
+AuthServiceTest > 회원가입 테스트 > 잘못된 이메일 형식으로 회원가입 시도 FAILED
+    org.mockito.exceptions.misusing.MissingMethodInvocationException: 
+    when() requires an argument which has to be 'a method call on a mock'.
+    For example:
+        when(mock.getArticles()).thenReturn(articles);
+
+    Also, this error might show up because:
+    1. you stub either of: final/private/native/equals()/hashCode() methods.
+       Those methods *cannot* be stubbed/verified.
+       Mocking methods declared on non-public parent classes is not supported.
+    2. inside when() you don't call method on mock but on some other object.
+        at app//com.ssafy.demo.security.auth.AuthServiceTest$SignupTest.signupWithInvalidEmail(AuthServiceTest.java:134)
+
+AuthServiceTest > 회원가입 테스트 > 정상적인 회원가입 FAILED
+    org.mockito.exceptions.misusing.MissingMethodInvocationException: 
+    when() requires an argument which has to be 'a method call on a mock'.
+    For example:
+        when(mock.getArticles()).thenReturn(articles);
+
+    Also, this error might show up because:
+    1. you stub either of: final/private/native/equals()/hashCode() methods.
+       Those methods *cannot* be stubbed/verified.
+       Mocking methods declared on non-public parent classes is not supported.
+    2. inside when() you don't call method on mock but on some other object.
+        at app//com.ssafy.demo.security.auth.AuthServiceTest$SignupTest.signupSuccess(AuthServiceTest.java:101)
+Finished generating test XML results (0.001 secs) into: /Users/chos/Documents/Github/stdev/study-deploy-backend/demo/build/test-results/test
+Generating HTML test report...
+Finished generating test html results (0.001 secs) into: /Users/chos/Documents/Github/stdev/study-deploy-backend/demo/build/reports/tests/test
+4 actionable tasks: 1 executed, 3 up-to-date
+Watched directory hierarchies: [/Users/chos/Documents/Github/stdev/study-deploy-backend/demo]
