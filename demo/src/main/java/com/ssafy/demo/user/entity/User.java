@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -33,5 +34,14 @@ public class User {
     @Column(nullable = true)
     @Enumerated(EnumType.STRING)
     private Gender gender;
-    
+
+    // 로그인 시도 관련 필드
+    @Column(nullable = false)
+    private int loginAttempts;
+
+    @Column(nullable = true)
+    private LocalDateTime lastLoginAttempt;
+
+    @Column(nullable = true)
+    private LocalDateTime passwordExpiryDate;
 }
